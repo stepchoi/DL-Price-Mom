@@ -23,13 +23,6 @@ from sklearn.model_selection import train_test_split
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 
 
-init_map = {
-    'relu': 'he_normal',
-    'elu': 'he_normal',
-    'tanh': 'glorot_normal',
-    'linear': 'glorot_uniform',
-}
-
 TEST_SIZE = .30
 EARLY_STOPPING = callbacks.EarlyStopping(min_delta=.0001, patience=5)
 REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau(patience=3)
@@ -71,7 +64,11 @@ class AE(object):
 
         def dense(model, d, last=False, extra={}):
             act = 'linear' if last else 'tanh'
-            args_ = {'kernel_initializer': init_map[act]}
+            init = {
+                'tanh': 'glorot_normal',
+                'linear': 'glorot_uniform',
+            }[act]
+            args_ = {'kernel_initializer': init}
             model = L.Dense(d, **args_, **extra)(model)
             if not last:
                 #if hypers['batch_norm']: model = BN()(model)

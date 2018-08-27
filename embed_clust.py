@@ -296,7 +296,7 @@ if __name__ == "__main__":
     nc_range = [int(nc) for nc in args.nc]
     if args.reset:
         with engine.connect() as conn:
-            conn.execute("drop table if exists embed_clust, s_dbw, embed_clust_q")
+            conn.execute("drop table if exists embed_clust, embed_clust_q")
 
     while True:
         clusters = get_clusters(args.origin)

@@ -3,8 +3,6 @@ import pdb
 import numpy as np
 import pandas as pd
 from box import Box
-from utils import engine
-from sqlalchemy.dialects import postgresql
 
 
 class S_Dbw():
@@ -87,21 +85,9 @@ class S_Dbw():
         """
         err_msg = ''
         try:
-            res = self.Dens_bw() + self.Scat()
-        except Exception as e:
-            res = np.nan
-            err_msg = str(e)
-        with engine.connect() as conn:
-            print('Saving S_Dbw debugging info')
-            dtype = {k: postgresql.ARRAY(postgresql.DOUBLE_PRECISION) for k in self.acc.keys()}
-            df = pd.DataFrame([{
-                'embed_clust_id': self.embed_clust_id,
-                'err_msg': err_msg,
-                **self.acc
-            }]).set_index('embed_clust_id')
-            df.to_sql('s_dbw', conn, index_label='embed_clust_id', if_exists='append', dtype=dtype)
-        return res
-
+            return self.Dens_bw() + self.Scat()
+        except Exception:
+            return np.nan
 
 if __name__ == '__main__':
     #just for tests
