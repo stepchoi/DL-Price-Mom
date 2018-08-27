@@ -22,27 +22,15 @@ def concat_x_cols(df, X):
     return df
 
 
-def get_clusters(origin=2003, for_ae=False):
-    # origin can be str, int (indiciating "yearly") or a pd.Period(freq='M') (indicating monthly).
-    # str(pd.Period) converts to proper 'YYYY-MM' which helps us around these functions (determining
-    # if we're monthly v yearly, saving to database, etc)
+def get_clusters(origin, for_ae=False):
     year = int(str(origin)[:4])
-    monthly = len(str(origin)) > 4
     with engine.connect() as conn:
         sql = f"select 1 from clusters where date_part('year', date)={year}"
         res = conn.execute(sql).fetchone()
         if res is None: return None, None
 
-        if monthly:
-            offset = BusinessMonthEnd()
-            end = offset.rollforward(origin.to_timestamp()).strftime('%Y-%m-%d')
-        else:
-            # TODO what was the reason for this difference b/w AE v. EmbedClust origin? Is it needed
-            # for monthly above too? IIRC it was the following, but I'm not certain:
-            # If this is for the AE, then we want to fetch all data, including the forecast
-            # origin itself (there's no Y). If it's for EmbedClust (then subsequently RNN), we fetch
-            # up to the origin as X, and the origin itself as Y
-            end = f"{origin}-12-31" if for_ae else f"{origin}-11-30"
+        offset = BusinessMonthEnd()
+        end = offset.rollforward(origin.to_timestamp()).strftime('%Y-%m-%d')
 
         sql = f"""
         select ticker, date, mtd_1mf, vals from clusters 
@@ -72,8 +60,6 @@ def argmax_matrix(mat):
 
 def clusters2np(q, origin, reset=False):
     os.makedirs(tmp_path('embed_clust/clusters2np'), exist_ok=True)
-    monthly = len(str(origin)) > 4
-    if not monthly: origin = int(origin)
     f = tmp_path(f'embed_clust/clusters2np/{origin}.pkl')
     if os.path.exists(f) and not reset:
         return pickle_load(f)
@@ -84,16 +70,10 @@ def clusters2np(q, origin, reset=False):
     q = q.reset_index().set_index('date')
     q.index = q.index.to_period('M')
 
-    if monthly:
-        months = Box(
-            train=q.loc['1995-12' : origin - 1].index.unique(),
-            test=q.loc[origin].index.unique()
-        )
-    else:
-        months = Box(
-            train=q.loc['1995-12':f'{origin - 1}-11'].index.unique(),
-            test=q.loc[f'{origin - 1}-12':].index.unique()
-        )
+    months = Box(
+        train=q.loc['1995-12' : origin - 1].index.unique(),
+        test=q.loc[origin].index.unique()
+    )
     data = Box(
         train=[],
         test=[],

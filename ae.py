@@ -26,6 +26,7 @@ from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 TEST_SIZE = .30
 EARLY_STOPPING = callbacks.EarlyStopping(min_delta=.0001, patience=5)
 REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau(patience=3)
+HYPEROPT_EVALS = 50
 
 
 class AE(object):
@@ -147,7 +148,7 @@ def run_model(X, z_dim, origin):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    common_args(parser, ['reset', 'origin'])
+    common_args(parser, ['reset', 'origin', 'pickup'])
     args = parser.parse_args()
 
     if args.reset:
@@ -158,7 +159,14 @@ if __name__ == '__main__':
     args.origin = origins.pop(0)
 
     while True:
-        print(f"{bcolors.OKBLUE}{args.origin}{bcolors.ENDC}")
+        # Pick up where left off
+        with engine.connect() as conn:
+            sql = f"select count(*) as ct from ae where origin='{args.origin}'"
+            if args.pickup and conn.execute(sql).fetchone().ct >= HYPEROPT_EVALS:
+                print(f'{bcolors.WARNING}skip origin={args.origin}{bcolors.ENDC}')
+                args.origin = origins.pop(0)
+                continue
+        print(f"{bcolors.OKBLUE}origin={args.origin} {bcolors.ENDC}")
 
         # Defining space variables needs to be _inside_ this for-loop. HyperOpt does something weird where it
         # marks spaces as "complete" or something, and every iteration past the first z_dim just skips; so this way we
@@ -186,8 +194,7 @@ if __name__ == '__main__':
             }
 
             trials = Trials()
-            max_evals = 50
-            fmin(run_model(X, z_dim, args.origin), space=space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
+            fmin(run_model(X, z_dim, args.origin), space=space, algo=tpe.suggest, max_evals=HYPEROPT_EVALS, trials=trials)
 
         n_origins_done += 1
         if n_origins_done == n_origins:

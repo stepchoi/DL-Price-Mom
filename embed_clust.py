@@ -155,7 +155,7 @@ class EmbedClust(object):
                 break
 
             if ite % update_interval == 0:
-                q, _= self.model.predict(x, verbose=0)
+                q, _ = self.model.predict(x, verbose=0)
                 p = self.target_distribution(q)  # update the auxiliary target distribution p
                 self.q, self.p = q, p
 
@@ -284,9 +284,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='train', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--maxiter', default=1e6, type=int)
     parser.add_argument('--tol', default=0.001, type=float)
-
-    common_args(parser, ['reset', 'run-num', 'origin'])
     parser.add_argument('--nc', nargs='*', help='List of n_clusters to cover, eg --nc 9 10 11')
+    common_args(parser, ['reset', 'run-num', 'origin', 'pickup'])
     args = parser.parse_args()
 
     origins, n_origins, n_origins_done = generate_origins(args.origin, 3)
@@ -300,16 +299,18 @@ if __name__ == "__main__":
 
     while True:
         clusters = get_clusters(args.origin)
+
         x = clusters.x.values
 
         for nc in nc_range:
+            # Pick up where you left off. EmbedClust is very computationally expensive, so you don't want to
+            # re-run unnecessarily. Also allows parallization (since other nodes will pick up unfinished origins)
             with engine.connect() as conn:
                 sql = f"select 1 from embed_clust where origin='{args.origin}' and n_clusters={nc} limit 1"
-                res = conn.execute(sql).fetchone()
-            if res:
-                print(f'{bcolors.WARNING}skip origin={args.origin} nc={nc}{bcolors.ENDC}')
-                args.origin = origins.pop(0)
-                continue
+                if args.pickup and conn.execute(sql).fetchone():
+                    print(f'{bcolors.WARNING}skip origin={args.origin} nc={nc}{bcolors.ENDC}')
+                    args.origin = origins.pop(0)
+                    continue
             print(f"{bcolors.OKBLUE}origin={args.origin} nc={nc}{bcolors.ENDC}")
 
             K.clear_session()  # hyperopt creates many graphs, will max memory fast if not cleared
@@ -331,12 +332,13 @@ if __name__ == "__main__":
 
             # Save for use by RNN. See https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch08s08.html
             q_ = concat_x_cols(clusters.y, embed_clust.q_w_noise)
+            dtype = {'q': psql.BYTEA, 'cluster_prices': psql.BYTEA}
             df = pd.DataFrame([{
                 'id': embed_clust.id,
                 'q': pickle.dumps(q_),
             }]).set_index('id')
             with engine.connect() as conn:
-                df.to_sql('embed_clust_q', conn, if_exists='append', index_label='id')
+                df.to_sql('embed_clust_q', conn, if_exists='append', index_label='id', dtype=dtype)
 
         n_origins_done += 1
         if n_origins_done == n_origins:

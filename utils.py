@@ -73,6 +73,7 @@ def common_args(parser, keys):
         'reset': dict(action='store_true', help='Reset results?'),
         'run-num': dict(type=int, default=1, help='Which run_num'),
         'origin': dict(nargs='*', help='List of origins to cover, eg --origin 2003 2004 2005'),
+        'pickup': dict(action='store_true', help='Pick up next origin where you left off?'),
     }
     for k in keys:
         parser.add_argument(f'--{k}', **lookup[k])

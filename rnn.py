@@ -17,6 +17,7 @@ from hyperopt.pyll.base import scope
 
 EARLY_STOPPING = callbacks.EarlyStopping(min_delta=.0001, patience=5)
 REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau(patience=2)
+HYPEROPT_EVALS = 100
 
 
 def col2np(col):
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target', type=str, default='tercile', help='(tercile|quintile|decile)')
     parser.add_argument('--reset-pkl', action='store_true', help='Reset only the clusters2np pkl files (--reset alone will do this too)')
-    common_args(parser, ['reset', 'origin'])
+    common_args(parser, ['reset', 'origin', 'pickup'])
 
     args = parser.parse_args()
 
@@ -130,14 +131,21 @@ if __name__ == '__main__':
 
     while True:
         with engine.connect() as conn:
-            sql = f"select * from embed_clust where origin='{args.origin}' and use=true limit 1"
+            # Pick up where you left off.
+            sql = f"select count(*) as ct from rnn_{args.target} where origin='{args.origin}'"
+            if args.pickup and conn.execute(sql).fetchone().ct >= HYPEROPT_EVALS:
+                print(f'{bcolors.WARNING}skip origin={args.origin}{bcolors.ENDC}')
+                args.origin = origins.pop(0)
+                continue
+
+            sql = f"select id from embed_clust where origin='{args.origin}' and use=true limit 1"
             embed_clust = conn.execute(sql).fetchone()
             if embed_clust is None:
                 raise Exception(f"No embed_clust row for origin={args.origin} with `use` column checked.")
             sql = f"select q from embed_clust_q where id='{embed_clust.id}' limit 1"
             embed_clust = conn.execute(sql).fetchone()
             if embed_clust is None:
-                raise Exception(f"No full clusters for this origin, run embed_clust.py with --percent 100 --origin {args.origin}")
+                raise Exception(f"No full clusters for this origin, run embed_clust.py with --origin {args.origin}")
             q = pickle.loads(embed_clust.q)
 
         data = clusters2np(q, args.origin, reset=(args.reset or args.reset_pkl))
@@ -146,7 +154,7 @@ if __name__ == '__main__':
         ns_ct = data.test.y.shape[0] - fs_ct
         print(f"Noise set samples: {ns_ct}, filtered set: {fs_ct}")
         if fs_ct == 0:
-            print(f"All test samples for {origin} are in the noise set. Find a better EmbedClust?")
+            print(f"All test samples for {args.origin} are in the noise set. Find a better EmbedClust?")
             continue
 
         print(f"{bcolors.OKBLUE}Train: {data.train_start}-{data.train_end}")
@@ -188,8 +196,7 @@ if __name__ == '__main__':
             'd_layers': hp.choice('d_layers', [1, 2, 3]),
         }
         trials = Trials()
-        max_evals = 100
-        best = fmin(run_model, space=space, algo=tpe.suggest, max_evals=max_evals, trials=trials)
+        best = fmin(run_model, space=space, algo=tpe.suggest, max_evals=HYPEROPT_EVALS, trials=trials)
 
         n_origins_done += 1
         if n_origins_done == n_origins:
