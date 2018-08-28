@@ -123,7 +123,6 @@ class EmbedClust(object):
         update_interval = int(x.shape[0] / batch_size) * 2  # 2 epochs
         print('Update interval', update_interval)
 
-        # save_interval = int(X.shape[0]/batch_size*50)  # 50 epochs
         save_interval = int(maxiter / 10)
         print('Save interval', save_interval)
 
@@ -133,7 +132,6 @@ class EmbedClust(object):
         assert save_interval >= update_interval
 
         # Step 1: initialize cluster centers using k-means
-        t1 = time()
         print('Initializing cluster centers with k-means.')
         kmeans = KMeans(n_clusters=self.n_clusters, n_init=20)
         self.z = self.ae.encoder.predict(x)
@@ -185,7 +183,7 @@ class EmbedClust(object):
         q_w_noise[noise], q_w_noise[noise, -1] = 0., 1.
         self.q_w_noise = q_w_noise
 
-        # Save q to DB @end
+        # Save metrics to DB
         with engine.connect() as conn:
             dtype = {
                 'origin': psql.VARCHAR(64),
@@ -221,12 +219,10 @@ class EmbedClust(object):
         {summation (q^2 * d^2) + 1/(nc X nc-1) X summation (euc dist of all combination of cluster centers)}
           / {min euc dist between all combination of cluster centers +1/nc}
         """
-        # x = latent rep (the input to EmbedClust, q is output)
-        x = self.z  # each "sample" or row of q (each row in q  = sample)
-        v = self.cluster_centers  # "v is cluster center (of column)" ???
+        x = self.z  # samples (rows)
+        v = self.cluster_centers
 
-        # print('X_shape', x.shape, 'v_shape', v.shape, 'q_shape', self.q.shape)
-        d2 = cdist(x, v) ** 2  # should be same shape as u
+        d2 = cdist(x, v) ** 2
         v2 = pdist(v) ** 2
         n = x.shape[0]
         c = v.shape[0]  # num_clusters
@@ -241,37 +237,31 @@ class EmbedClust(object):
             bottom = v2.min() * n
         return top / bottom
 
-    def s_dbw(self, embed_clust_id=None):
+    def s_dbw(self):
         """
-        1) get q, then filter out all rows with entropy > ln(2)
-        2) argmax the non-noise rows
-        3) calculate S_Dbw on this completely hard (each row is one-hot encoded) clustering and save to db
+        Calculate S_Dbw using iphysresearch/S_Dbw_validity_index (separate file); we need to massage our data
+        to pass in a format that project expects
         """
-
-        # data --> raw data
-        # A) data -  this is the actual z_dim representation of the data X filtered out for the rows (samples) that have been assigned to noise - so X - noise
-        #log_noise = np.log(self.n_clusters/2)
+        # Remove noise rows from data (create filtered sets, *_fs)
         noise = noise_idxs(self.q)
         z_fs, q_fs = self.z[~noise], self.q[~noise]
         self.noise_pct = len(self.z[noise])/len(self.z)
         if z_fs.shape[0] == 0: return 0.  # assert z_fs.shape[0] > 0, "Everything was noise"
 
-        # data_cluster --> The category that represents each piece of data(the number of category should begin 0)
-        # B) data_cluster - a vector of cluster assignments (with same row length as X), assignments start with 0
+        # Vector of cluster assignments. Numerical, starting with 0. Same row length as X
         data_cluster = q_fs.argmax(1)
 
-        # centers_id --> the center_id of each cluster's center
-        # C) centers_id - the row that is cluster center
+        # Cluster centroids
         cluster_centers = self.cluster_centers
 
-        # it will probably be best if we _scale_ X before S_Dbw and *ONLY* for S_Dbw, standard scale without any outlier filters
-        # scale cluster_centers along with
+        # it will probably be best if we _scale_ X before S_Dbw and *ONLY* for S_Dbw, standard scale without any
+        # outlier filters scale cluster_centers along with
         z_fs = np.r_[z_fs, cluster_centers]
         z_fs = scale(z_fs)
         nc = cluster_centers.shape[0]
         z_fs, cluster_centers = z_fs[:-nc], z_fs[-nc:]
 
-        s_dbw = S_Dbw(z_fs, data_cluster, cluster_centers, embed_clust_id)
+        s_dbw = S_Dbw(z_fs, data_cluster, cluster_centers)
         return s_dbw.S_Dbw_result()
 
 
