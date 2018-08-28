@@ -92,7 +92,7 @@ def threaded(filename):
     clusters['look_12m'] = eligible[::-1].rolling(window=12).max()[::-1].fillna(False).astype(bool)
 
     # Only needed has_enough for intermediate
-    del days['has_enough'], months['has_enough'], clusters['has_enough']
+    # del days['has_enough'], months['has_enough'], clusters['has_enough']
 
     # Save to DB
     # --------

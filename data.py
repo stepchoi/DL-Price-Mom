@@ -35,7 +35,8 @@ def get_clusters(origin):
 
         sql = f"""
         select ticker, date, mtd_1mf, vals from clusters 
-        where look_12m=TRUE and date <= '{end}'
+        where look_12m=TRUE
+        and date between '1995-12-29' and '{end}'
         order by date asc -- if not for sequencing, something to ensure consistent (same) clusters used each time  
         """
         df = pd.read_sql(sql, conn, index_col=['date', 'ticker']).sort_index()
@@ -68,8 +69,8 @@ def clusters2np(q, origin, reset=False):
     q.index = q.index.to_period('M')
 
     months = Box(
-        train=q.loc['1995-12' : origin - 1].index.unique(),
-        test=q.loc[origin].index.unique()
+        train=q.loc['1995-12' : str(origin - 1)].index.unique(),
+        test=q.loc[str(origin)].index.unique()
     )
     data = Box(
         train=[],
