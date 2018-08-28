@@ -49,7 +49,6 @@ class ClusteringLayer(Layer):
         self.n_clusters = n_clusters
         self.alpha = alpha
         self.input_spec = InputSpec(ndim=2)
-        self.use_cid = kwargs.get('use_cid', False)  # True
         self.reason_stop = 'unknown'
 
     def build(self, input_shape):
@@ -83,7 +82,7 @@ class ClusteringLayer(Layer):
 
 
 class EmbedClust(object):
-    def __init__(self, ae, args=Box({}), n_clusters=10, alpha=1.0):
+    def __init__(self, ae, args, n_clusters=10, alpha=1.0):
         super(EmbedClust, self).__init__()
         self.id = uuid.uuid4()  # used for ref'ing in database, connecting to s_dbw, etc
         self.args = args
@@ -201,7 +200,7 @@ class EmbedClust(object):
 
                 delta_label=delta_label,
                 xb=self.xb().item(),
-                s_dbw=self.s_dbw(self.id),
+                s_dbw=self.s_dbw(),
                 noise_pct=self.noise_pct,
 
                 use=False

@@ -102,8 +102,8 @@ class RNN(object):
         return {
             'loss_test': loss_test,
             'acc_test': acc_test,
-            'hml': hml,
-            'bnh': bnh,
+            'hml': hml,  # high minus low
+            'bnh': bnh,  # buy and hold
             'pct_cov': pct_covered.tolist(),
             **{f'p{i}': v for i, v in enumerate(p)}
         }
@@ -176,7 +176,6 @@ if __name__ == '__main__':
                     'hypers': hypers,
                     'loss_val': loss_val,
                     'acc_val': acc_val,
-                    'use': False,
                     **res
                 }]).set_index('id')
                 df.to_sql(f'rnn_{args.target}', conn, index_label='id', if_exists='append', dtype=dtype)
