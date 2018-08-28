@@ -22,7 +22,7 @@ def concat_x_cols(df, X):
     return df
 
 
-def get_clusters(origin, for_ae=False):
+def get_clusters(origin):
     year = int(str(origin)[:4])
     with engine.connect() as conn:
         sql = f"select 1 from clusters where date_part('year', date)={year}"
@@ -44,11 +44,7 @@ def get_clusters(origin, for_ae=False):
         X = [x for x in df.vals.values]
         df = concat_x_cols(df.drop('vals', 1), X)
 
-    if for_ae:
-        return df.x.values
-
     df['y', 'mtd_1mf'] = df.y.mtd_1mf
-
     return df
 
 

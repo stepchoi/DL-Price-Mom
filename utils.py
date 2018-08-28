@@ -65,9 +65,6 @@ def tmp_path(path_):
     return path_join(__file__, 'tmp', path_)
 
 
-hdf_comp = {'complib': 'blosc:snappy', 'complevel': 9}  # 'blosc:lz4'
-
-
 def common_args(parser, keys):
     lookup = {
         'reset': dict(action='store_true', help='Reset results?'),
@@ -93,3 +90,15 @@ def generate_origins(args_origin, n_runs=3):
 
     n_origins = len(origins)
     return (origins * n_runs), n_origins, 0
+
+
+# TODO remove before submission (origins sanity-check)
+def check_origin_max_date_match(origin, df):
+    max_date = str(df.index.get_level_values(0)[-1])[:7]
+    origin = str(origin)
+    if origin > max_date:
+        print(f"x {bcolors.FAIL}origin={origin} max_date={max_date}{bcolors.ENDC}")
+        return False
+    else:
+        print(f"√ {bcolors.OKGREEN}origin={origin} max_date={max_date}{bcolors.ENDC}")
+        return True

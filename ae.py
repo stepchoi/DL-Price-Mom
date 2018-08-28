@@ -9,7 +9,7 @@ import split_gpu
 import uuid
 import numpy as np
 import pandas as pd
-from utils import engine, common_args, generate_origins, bcolors
+from utils import engine, common_args, generate_origins, bcolors, check_origin_max_date_match
 from data import get_clusters
 from sqlalchemy.dialects import postgresql
 from keras import backend as K
@@ -109,7 +109,7 @@ class AE(object):
             batch_size=self.batch_size,
             shuffle=True,
             validation_data=(X_test, X_test),
-            verbose=1,
+            verbose=0,
             callbacks=[REDUCE_LR_PLATEAU, EARLY_STOPPING]
         )
         return res.history['val_loss'][-1]
@@ -162,13 +162,16 @@ if __name__ == '__main__':
                 args.origin = origins.pop(0)
                 continue
 
-        print(f"{bcolors.OKBLUE}origin={args.origin} {bcolors.ENDC}")
+        # print(f"{bcolors.OKBLUE}origin={args.origin} {bcolors.ENDC}")
 
         # Defining space variables needs to be _inside_ this for-loop. HyperOpt does something weird where it
         # marks spaces as "complete" or something, and every iteration past the first z_dim just skips; so this way we
         # re-init the space variables
-        X = get_clusters(origin=args.origin, for_ae=True)
-        if X is None: break
+        clust = get_clusters(origin=args.origin)
+        if clust is None: break
+        X = clust.x.values
+
+        check_origin_max_date_match(args.origin, clust)
 
         for z_dim in [14, 15, 16]:
             def unit_space(n):

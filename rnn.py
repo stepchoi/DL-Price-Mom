@@ -1,4 +1,3 @@
-
 import split_gpu
 
 import pdb, uuid, pickle
@@ -8,7 +7,7 @@ import keras.backend as K
 from keras import callbacks, optimizers
 import numpy as np
 import pandas as pd
-from utils import engine, common_args, bcolors, generate_origins
+from utils import engine, common_args, bcolors, generate_origins, check_origin_max_date_match
 from data import clusters2np
 from sqlalchemy.dialects import postgresql as psql
 from hyperopt import fmin, tpe, hp, Trials
@@ -147,6 +146,8 @@ if __name__ == '__main__':
             if embed_clust is None:
                 raise Exception(f"No full clusters for this origin, run embed_clust.py with --origin {args.origin}")
             q = pickle.loads(embed_clust.q)
+
+            check_origin_max_date_match(args.origin, q)
 
         data = clusters2np(q, args.origin, reset=(args.reset or args.reset_pkl))
 

@@ -17,7 +17,7 @@ from scipy.spatial.distance import cdist, pdist
 from box import Box
 from sqlalchemy.dialects import postgresql as psql
 
-from utils import engine, common_args, bcolors, noise_idxs, generate_origins
+from utils import engine, common_args, bcolors, noise_idxs, generate_origins, check_origin_max_date_match
 from data import get_clusters, concat_x_cols
 from ae import AE
 from S_Dbw import S_Dbw
@@ -288,6 +288,8 @@ if __name__ == "__main__":
     while True:
         clusters = get_clusters(args.origin)
         x = clusters.x.values
+
+        check_origin_max_date_match(args.origin, clusters)
 
         for nc in nc_range:
             # Pick up where you left off. EmbedClust is very computationally expensive, so you don't want to
