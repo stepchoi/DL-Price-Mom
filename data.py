@@ -4,7 +4,7 @@ import numpy as np
 from box import Box
 from utils import engine, thread, bcolors, tmp_path, pickle_load, pickle_dump
 np.random.seed(42)  # ensure consistent results
-from pandas.tseries.offsets import BusinessMonthEnd
+import pandas.tseries.offsets as offsets
 
 
 def concat_x_cols(df, X):
@@ -29,7 +29,8 @@ def get_clusters(origin, for_ae=False):
         res = conn.execute(sql).fetchone()
         if res is None: return None, None
 
-        offset = BusinessMonthEnd()
+        # offset = BusinessMonthEnd()
+        offset = offsets.MonthEnd()
         end = offset.rollforward(origin.to_timestamp()).strftime('%Y-%m-%d')
 
         sql = f"""

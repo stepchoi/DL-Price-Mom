@@ -12,7 +12,6 @@ import pandas as pd
 from utils import engine, common_args, generate_origins, bcolors
 from data import get_clusters
 from sqlalchemy.dialects import postgresql
-from sqlalchemy import text
 from keras import backend as K
 from keras import callbacks
 from keras.models import Model
@@ -72,9 +71,7 @@ class AE(object):
             args_ = {'kernel_initializer': init}
             model = L.Dense(d, **args_, **extra)(model)
             if not last:
-                #if hypers['batch_norm']: model = BN()(model)
                 model = L.Activation(act)(model)
-                #if hypers['dropout']: L.Dropout(hypers['dropout'])(model)
             return model
 
         if len(dims) == 0:
@@ -102,28 +99,26 @@ class AE(object):
         decoder = Model(encoded_input, decoder)
 
         autoencoder.compile(optimizer=Adam(lr=10 ** -hypers['lr']), loss='mse')
-        # autoencoder.summary()
         self.autoencoder, self.encoder, self.decoder = autoencoder, encoder, decoder
 
-    def train(self, X, callbacks=[]):
+    def train(self, X):
         X_train, X_test = train_test_split(X, test_size=TEST_SIZE)
-        callbacks = [REDUCE_LR_PLATEAU, EARLY_STOPPING] + callbacks
-        hist = self.autoencoder.fit(
+        res = self.autoencoder.fit(
             X_train, X_train,
             epochs=1000,  # doesn't matter how high, the callbacks will stop the model
             batch_size=self.batch_size,
             shuffle=True,
             validation_data=(X_test, X_test),
             verbose=1,
-            callbacks=callbacks).history
-        return hist['val_loss'][-1]
+            callbacks=[REDUCE_LR_PLATEAU, EARLY_STOPPING]
+        )
+        return res.history['val_loss'][-1]
 
 def run_model(X, z_dim, origin):
     i = 0
     def inner_fn(hypers):
         nonlocal i
         hypers['z_dim'] = z_dim
-        print(hypers)
         K.clear_session()  # Important! Else code hangs
         ae = AE()
         ae.compile(hypers)
@@ -166,6 +161,7 @@ if __name__ == '__main__':
                 print(f'{bcolors.WARNING}skip origin={args.origin}{bcolors.ENDC}')
                 args.origin = origins.pop(0)
                 continue
+
         print(f"{bcolors.OKBLUE}origin={args.origin} {bcolors.ENDC}")
 
         # Defining space variables needs to be _inside_ this for-loop. HyperOpt does something weird where it

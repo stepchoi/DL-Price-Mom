@@ -67,7 +67,6 @@ class ClusteringLayer(Layer):
         Return:
             q: student's t-distribution, or soft labels for each sample. shape=(n_samples, n_clusters)
         """
-        #cid = self.CID(inputs) if self.use_cid else 1
         q = 1.0 / (1.0 + (K.sum(K.square(K.expand_dims(inputs, axis=1) - self.clusters), axis=2) / self.alpha))
         q **= (self.alpha + 1.0) / 2.0
         q = K.transpose(K.transpose(q) / K.sum(q, axis=1))
@@ -89,7 +88,7 @@ class EmbedClust(object):
         self.id = uuid.uuid4()  # used for ref'ing in database, connecting to s_dbw, etc
         self.args = args
         self.n_clusters = n_clusters
-        self.alpha = alpha  # TODO used anywhere?
+        self.alpha = alpha
         self.ae = ae
         self.reason_stop = 'unknown'
         self.noise_pct = 0
@@ -144,7 +143,6 @@ class EmbedClust(object):
         self.model.get_layer(name='clustering').set_weights([self.cluster_centers])
 
         # Step 2: deep clustering
-
         loss = 0
         index = 0
         index_array = np.arange(x.shape[0])
@@ -299,7 +297,6 @@ if __name__ == "__main__":
 
     while True:
         clusters = get_clusters(args.origin)
-
         x = clusters.x.values
 
         for nc in nc_range:
@@ -328,7 +325,6 @@ if __name__ == "__main__":
             embed_clust.model.summary()
             embed_clust.compile(loss=['kld', 'mse'], loss_weights=[0.1, 1], optimizer='adam')
             y_pred = embed_clust.fit(x, tol=args.tol)
-
 
             # Save for use by RNN. See https://www.safaribooksonline.com/library/view/python-cookbook/0596001673/ch08s08.html
             q_ = concat_x_cols(clusters.y, embed_clust.q_w_noise)

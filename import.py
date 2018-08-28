@@ -91,6 +91,9 @@ def threaded(filename):
     # Also bool(nan) = True
     clusters['look_12m'] = eligible[::-1].rolling(window=12).max()[::-1].fillna(False).astype(bool)
 
+    # Only needed has_enough for intermediate
+    del days['has_enough'], months['has_enough'], clusters['has_enough']
+
     # Save to DB
     # --------
     for table, df in [('eod', days), ('eom', months), ('clusters', clusters)]:
