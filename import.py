@@ -5,6 +5,7 @@ from utils import engine, thread
 from sqlalchemy.dialects import postgresql as psql
 
 SPAN = {'min': 475, 'of': 500}
+FIRST_DATE = '1993-10-01'
 
 with engine.connect() as conn:
     conn.execute('drop table if exists eod, eom, clusters')
@@ -25,6 +26,9 @@ def threaded(filename):
     days = days[['date', 'close']].rename(columns={'close': 'price'})  # we don't need OHLCV for this project
     days['date'] = pd.to_datetime(days.date)
     days = days.set_index('date').sort_index()
+
+    days = days.loc[FIRST_DATE:]
+    if days.shape[0] < SPAN['of']: return
 
     # Impute, add change, determine eligibility
     # --------
@@ -47,11 +51,11 @@ def threaded(filename):
         next_month = month + 1
         if next_month in days.index:
             next_month = days.loc[(month + 1).strftime('%Y-%m')]
-            mtd_1mf = (next_month.price.iloc[-1] / next_month.price.iloc[0]) - 1
+            mtd_1mf = (next_month.price.iloc[-1] / group.price.iloc[-1]) - 1
+            imputed = False
         else:
-            next_month = None
-            mtd_1mf = (group.price.iloc[-1] / group.price.iloc[0]) - 1
-        imputed = next_month is None
+            mtd_1mf = np.nan
+            imputed = True
 
         # EOM summaries
         # --------
@@ -79,8 +83,10 @@ def threaded(filename):
             imputed=imputed,
             mtd_1mf=mtd_1mf
         ))
-    months = pd.DataFrame(months).set_index('date').sort_index()
-    clusters = pd.DataFrame(clusters).set_index('date').sort_index()
+    months = pd.DataFrame(months)\
+        .set_index('date').sort_index().ffill()  # ffill() imputes mtd_1mf where == nan (where imputed==True)
+    clusters = pd.DataFrame(clusters)\
+        .set_index('date').sort_index().ffill()
 
     # Determine clusters eligibility (need to collect them all first, above)
     # ------
