@@ -70,11 +70,11 @@ def threaded(filename):
         # --------
         missing_days = group.imputed.astype(int).sum()
         v = group.change.values
-        if len(v) > 22:
-            v = np.concatenate([[v[0:2].mean()], v[2:]])
-        elif len(v) < 22:
-            v = np.concatenate([np.zeros(22 - len(v)), v])
-        assert len(v) == 22
+        if v.size > 22:
+            v = np.r_[ [v[0:2].mean()], v[2:] ]
+        elif v.size < 22:
+            v = np.r_[ np.zeros(22 - v.size), v ]
+        assert v.size == 22
         clusters.append(dict(
             date=month,
             vals=v.tolist(),
