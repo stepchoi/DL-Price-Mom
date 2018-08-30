@@ -36,7 +36,7 @@ We have arrange the code to work with Kaggle dataset but there are few important
 ## Run
 You'll train three separate components to completion (they depend on each other sequentially):
 1. Autoencoder
-2. EmbedClust
+2. Embedded Clustering
 3. Recurrent Neural Network (GRU/FFN)
 
 Each component can take 6h or more to run; EmbedClust, in particular, takes multiple days. Run each step in a tmux session and check back in 24h. Between each step (after completion), you'll choose optimal autoencoder configurations or embedded clusterings.
