@@ -37,14 +37,14 @@ We have arrange the code to work with Kaggle dataset but there are few important
 You'll train three separate components to completion (they depend on each other sequentially):
 1. Autoencoder
 2. EmbedClust
-3. Recurrent Neural Network
+3. Recurrent Neural Network (GRU/FFN)
 
 Each component will take a day or so; EmbedClust in particular takes multiple days. Run each step in a tmux session, check back in 24h. Between each step (after completion), you'll choose hyperparameter winners.
 
 1. `python ae.py`
-2. `python select_winners.py`
+2. `python select_winners.py` - selects optimal hyperparameters for autoencoder.
 3. `python embed_clust.py`
-4. Manually select some embed_clust winners (set `use` to `TRUE`), based on XB or S_Dbw scores.
+4. Manually select embed_clust clustering outputs for each origin (set `use` to `TRUE`), based on normalized X_B or S_Dbw scores.
 5. `python rnn.py`
 
 ## Credit
