@@ -41,11 +41,11 @@ You'll train three separate components to completion (they depend on each other 
 
 Each component will take a day or so; EmbedClust in particular takes multiple days. Run each step in a tmux session, check back in 24h. Between each step (after completion), you'll choose hyperparameter winners.
 
-1. `python ae.py`
-2. `python select_winners.py` - selects optimal hyperparameters for autoencoder.
-3. `python embed_clust.py`
+1. `python ae.py` - runs hyperopt for autoencoding of the data 
+2. `python select_winners.py` - selects optimal hyperparameter configurations for autoencoder.
+3. `python embed_clust.py` - runs embedded clustering on the data for origins and k clusters based on the selected autoencoder.  
 4. Manually select embed_clust clustering outputs for each origin (set `use` to `TRUE`), based on normalized X_B or S_Dbw scores.
-5. `python rnn.py`
+5. `python rnn.py` - runs GRU/FFN based on selected optimal embedded clusterings.
 
 ## Credit
 - Deep Clustering with Convolutional Autoencoders (DCEC)
