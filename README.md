@@ -39,7 +39,7 @@ You'll train three separate components to completion (they depend on each other 
 2. EmbedClust
 3. Recurrent Neural Network (GRU/FFN)
 
-Each component will take a day or so; EmbedClust in particular takes multiple days. Run each step in a tmux session, check back in 24h. Between each step (after completion), you'll choose hyperparameter winners.
+Each component can take 6h or more to run; EmbedClust, in particular, takes multiple days. Run each step in a tmux session and check back in 24h. Between each step (after completion), you'll choose optimal autoencoder configurations or embedded clusterings.
 
 1. `python ae.py` - runs hyperopt for autoencoding of the data 
 2. `python select_winners.py` - selects optimal hyperparameter configurations for autoencoder.
