@@ -29,8 +29,8 @@ The important additions to your dir structure should be:
 This will populate your database from the Kaggle dataset, it will take a few hours.
 
 #### Note re: dataset
-We have arrange the code to work with Kaggle dataset but there are few important provisions:
-1. We did not use Kaggle data for our analysis. We used proprietary licensed data from FTSE Russell which we cannot provide by the terms of the agreement.
+We have arrange the code to work with the Kaggle dataset but there are few important provisions:
+1. Kaggle data was NOT used for our analysis. Our research is based on proprietary licensed data from FTSE Russell which we cannot provide by the terms of our agreement.
 2. Kaggle does not specify the investment universe, which was sourced from FTSE Rusell database for the Russell 1000 based investment universe.
 
 ## Run
