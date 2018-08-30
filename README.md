@@ -53,7 +53,7 @@ Each component can take 6h or more to run; EmbedClust, in particular, takes mult
   - Paper: [Unsupervised Deep Embedding for Clustering Analysis](https://xifengguo.github.io/papers/ICONIP17-DCEC.pdf)
 - S_Dbw
   - Code: [iphysresearch/S_Dbw_validity_index](https://github.com/iphysresearch/S_Dbw_validity_index)
-  - Paper: [Clustering Validity Assessment: Finding the optimal partitioning of a data set ](https://pdfs.semanticscholar.org/dc44/df745fbf5794066557e52074d127b31248b2.pdf)
+  - Paper: [Clustering Validity Assessment: Finding the optimal partitioning of a data set ](https://ieeexplore.ieee.org/document/989517/)
 - Xie-Beni index (XB)
-  -  Paper: [Understanding of Internal Clustering Validation Measures](http://datamining.rutgers.edu/publication/internalmeasures.pdf)
+  -  Paper: [A validity measure for fuzzy clustering](https://ieeexplore.ieee.org/document/85677/)
 
