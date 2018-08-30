@@ -26,27 +26,26 @@ The important additions to your dir structure should be:
 #### Import
 `python import.py`
 
-This will populate your database from the Kaggle dataset, it will take some hours.
-
+This will populate your database from the Kaggle dataset, it will take a few hours.
 
 #### Note re: dataset
-We have arrange the code to work with Kaggle dataset but there are few caveats:
-1. We did not use Kaggle data for our analysis. We used proprietary licensed data from FTSE Russell we which can not offer by the terms of the agreement.
-1. Kaggle does not specify the investment universe, which we sourced from FTSE Rusell database for Russell 1000 data.
+We have arrange the code to work with Kaggle dataset but there are few important provisions:
+1. We did not use Kaggle data for our analysis. We used proprietary licensed data from FTSE Russell which we cannot provide by the terms of the agreement.
+2. Kaggle does not specify the investment universe, which was sourced from FTSE Rusell database for the Russell 1000 based investment universe.
 
 ## Run
 You'll train three separate components to completion (they depend on each other sequentially):
 1. Autoencoder
-1. EmbedClust
-1. Recurrent Neural Network
+2. EmbedClust
+3. Recurrent Neural Network
 
-Each component will take a day or so; EmbedClust in particular takes many days. Run each step in a tmux session, check back in 24h. Between each step (after completion), you'll choose hyperparameter winners.
+Each component will take a day or so; EmbedClust in particular takes multiple days. Run each step in a tmux session, check back in 24h. Between each step (after completion), you'll choose hyperparameter winners.
 
 1. `python ae.py`
-1. `python select_winners.py`
-1. `python embed_clust.py`
-1. Manually select some embed_clust winners (set `use` to `TRUE`), based on XB or S_Dbw scores.
-1. `python rnn.py`
+2. `python select_winners.py`
+3. `python embed_clust.py`
+4. Manually select some embed_clust winners (set `use` to `TRUE`), based on XB or S_Dbw scores.
+5. `python rnn.py`
 
 ## Credit
 - Deep Clustering with Convolutional Autoencoders (DCEC)
