@@ -297,7 +297,6 @@ if __name__ == "__main__":
                 sql = f"select 1 from embed_clust where origin='{args.origin}' and n_clusters={nc} limit 1"
                 if args.pickup and conn.execute(sql).fetchone():
                     print(f'{bcolors.WARNING}skip origin={args.origin} nc={nc}{bcolors.ENDC}')
-                    args.origin = origins.pop(0)
                     continue
             print(f"{bcolors.OKBLUE}origin={args.origin} nc={nc}{bcolors.ENDC}")
 
