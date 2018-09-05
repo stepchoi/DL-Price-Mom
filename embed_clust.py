@@ -253,8 +253,7 @@ class EmbedClust(object):
         # Cluster centroids
         cluster_centers = self.cluster_centers
 
-        # it will probably be best if we _scale_ X before S_Dbw and *ONLY* for S_Dbw, standard scale without any
-        # outlier filters scale cluster_centers along with
+        # Scale x anc cluster centroids for S_Dbw 
         z_fs = np.r_[z_fs, cluster_centers]
         z_fs = scale(z_fs)
         nc = cluster_centers.shape[0]
