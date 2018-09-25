@@ -96,7 +96,7 @@ def clusters2np(q, origin, reset=False):
                 ds.append(pd.DataFrame({
                     'date': m,
                     'ticker': ticker,
-                    'x': [ohc[:]],
+                    'x': [ohc],
                     'y': [ohc[-1]],
                     'mtd_1mf': group.y.mtd_1mf[-1]
                 }))
