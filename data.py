@@ -82,9 +82,9 @@ def clusters2np(q, origin, reset=False):
         skipped = []
         ds = data[set_]
         def threaded(m):
-            chunk = q.loc[m-12:m]
+            chunk = q.loc[m-11:m]
             for ticker, group in chunk.groupby('ticker'):
-                if group.shape[0] != 13:
+                if group.shape[0] != 12:
                     # skipped.append(ticker)
                     skipped.append(group.shape[0])  # FIXME find solution for this
                     continue
@@ -96,7 +96,7 @@ def clusters2np(q, origin, reset=False):
                 ds.append(pd.DataFrame({
                     'date': m,
                     'ticker': ticker,
-                    'x': [ohc[:-1]],
+                    'x': [ohc[:]],
                     'y': [ohc[-1]],
                     'mtd_1mf': group.y.mtd_1mf[-1]
                 }))
