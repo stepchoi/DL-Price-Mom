@@ -151,12 +151,6 @@ if __name__ == '__main__':
 
         data = clusters2np(q, args.origin, reset=(args.reset or args.reset_pkl))
 
-        fs_ct = col2np(data.test.y)[:, :-1].sum()
-        ns_ct = data.test.y.shape[0] - fs_ct
-        print(f"Noise set samples: {ns_ct}, filtered set: {fs_ct}")
-        if fs_ct == 0:
-            print(f"All test samples for {args.origin} are in the noise set. Find a better EmbedClust?")
-            continue
 
         print(f"{bcolors.OKBLUE}Train: {data.train_start}-{data.train_end}")
         print(f"Test: {data.test_start}-{data.test_end}{bcolors.ENDC}")
