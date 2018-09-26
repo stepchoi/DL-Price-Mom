@@ -79,8 +79,7 @@ class RNN(object):
 
     def test(self):
         d = self.data.test
-        d['ranked_T'] = d.mtd_1mf.argsort()
-        d['quant_T'] = pd.qcut(d.ranked_T, args.bins, labels=False)
+        d['quant_T'] = pd.qcut(d.mtd_1mf, args.bins, labels=False)
         loss_test, acc_test = self.model.evaluate(col2np(d.x), pd.get_dummies(d.quant_T))
 
         pct_covered = [0.] * args.bins
