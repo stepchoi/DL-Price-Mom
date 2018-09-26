@@ -89,13 +89,13 @@ class RNN(object):
             'mtd_1mf': d.mtd_1mf
         })
         #df['ranked'] = df.quant.argsort()
-        df['binned'] = pd.cut(df.quant, args.bins, labels=False)
-        quants = df.groupby('binned', sort=True)
+        #df['binned'] = pd.cut(df.quant, args.bins, labels=False)
+        quants = df.groupby('quant', sort=True)
         p = quants.mtd_1mf.mean()
         p = [p[i] if i in p else 0 for i in range(args.bins)]  # fill in missing holes with 0
 
         # p = p.sort_index()  # handled oin groupby(sort=True) above?
-        pct_covered = df.groupby('binned').size()/df.shape[0]
+        pct_covered = df.groupby('quant').size()/df.shape[0]
         hml = p[args.bins - 1] - p[0]
         bnh = d.mtd_1mf.mean()
 
