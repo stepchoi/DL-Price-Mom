@@ -64,8 +64,9 @@ class RNN(object):
         batch_size = 2 ** int(self.hypers['batch_size'])
         d = self.data.train
         x = col2np(d.x)
-        d['ranked'] = d.mtd_1mf.argsort()
-        d['quant'] = pd.qcut(d.ranked, args.bins, labels=False)
+        for m, group in d.groupby(level=0):
+            d.loc[m, 'quant'] = pd.qcut(group.mtd_1mf, args.bins, labels=False)
+            
         y = pd.get_dummies(d.quant).values
         history = self.model.fit(
             x, y,
