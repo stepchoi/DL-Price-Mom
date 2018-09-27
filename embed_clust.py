@@ -71,6 +71,12 @@ class ClusteringLayer(Layer):
         q = K.transpose(K.transpose(q) / K.sum(q, axis=1))
         return q
 
+    def CID(self, x):
+        W = self.clusters  # self.weights[0]
+        a = K.sqrt(K.sum((x[1:] - x[:-1]) ** 2))
+        b = K.sqrt(K.sum((W[1:] - W[:-1]) ** 2))
+        return K.maximum(a, b) / K.minimum(a, b)
+
     def compute_output_shape(self, input_shape):
         assert input_shape and len(input_shape) == 2
         return input_shape[0], self.n_clusters
