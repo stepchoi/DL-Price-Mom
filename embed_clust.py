@@ -305,7 +305,7 @@ if __name__ == "__main__":
                     temp_CVI = conn.execute(sql).fetchall()
 
                 for sdbw, xb in temp_CVI:
-                    if sdbw < 3 and xb < 25:
+                    if sdbw < 2.5 and xb < 25:
                         print(f'{bcolors.WARNING}skip origin={args.origin} {bcolors.ENDC}')
                         n_origins_done += 1
                         args.origin = origins.pop(0)
