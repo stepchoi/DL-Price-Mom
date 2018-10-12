@@ -126,12 +126,18 @@ class EmbedClust(object):
         maxiter = int(maxiter)
 
         update_interval = int(x.shape[0] / batch_size) * 2  # 2 epochs
-        print('Update interval', update_interval)
-
         save_interval = int(maxiter / 10)
-        print('Save interval', save_interval)
 
         esp_delta = 5
+
+        if args.wCVI:
+            maxiter = maxiter * 2
+            update_interval = update_interval * 2
+            save_interval = int(maxiter / 5)
+
+        print('Update interval', update_interval)
+        print('Save interval', save_interval)
+
         early_stop_start_after = save_interval
 
         assert save_interval >= update_interval
@@ -277,6 +283,7 @@ if __name__ == "__main__":
     parser.add_argument('--maxiter', default=1e6, type=int)
     parser.add_argument('--tol', default=0.001, type=float)
     parser.add_argument('--nc', nargs='*', help='List of n_clusters to cover, eg --nc 9 10 11')
+    parser.add_argument('--wCVI', action='store_true', help='Finds and redo the weak CVI origins')
     common_args(parser, ['reset', 'run-num', 'origin', 'pickup'])
     args = parser.parse_args()
 
@@ -290,6 +297,23 @@ if __name__ == "__main__":
             conn.execute("drop table if exists embed_clust, embed_clust_q")
 
     while True:
+        if args.wCVI:
+            while True:
+                cont_loop = False
+                with engine.connect() as conn:
+                    sql = f"select s_dbw, xb from embed_clust where origin='{args.origin}'"
+                    temp_CVI = conn.execute(sql).fetchall()
+
+                for sdbw, xb in temp_CVI:
+                    if sdbw < 3 and xb < 25:
+                        print(f'{bcolors.WARNING}skip origin={args.origin} {bcolors.ENDC}')
+                        n_origins_done += 1
+                        args.origin = origins.pop(0)
+                        cont_loop = True
+                        break
+                if cont_loop: continue
+                break
+
         clusters = get_clusters(args.origin)
         x = clusters.x.values
 
