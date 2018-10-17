@@ -115,13 +115,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target', type=str, default='tercile', help='(tercile|quintile|decile)')
     parser.add_argument('--reset-pkl', action='store_true', help='Reset only the clusters2np pkl files (--reset alone will do this too)')
+    parser.add_argument('--cvi', type=str, default='d', help='(d|XB|sdbw)')
     common_args(parser, ['reset', 'origin', 'pickup'])
 
     args = parser.parse_args()
 
     if args.reset:
         with engine.connect() as conn:
-            conn.execute(f'drop table if exists rnn_{args.target}')
+            conn.execute(f'drop table if exists rnn_{args.cvi}_{args.target}')
 
     args.bins = {'quintile': 5, 'tercile': 3, 'decile': 10}[args.target]
 
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     while True:
         with engine.connect() as conn:
             # Pick up where you left off.
-            sql = f"select count(*) as ct from rnn_{args.target} where origin='{args.origin}'"
+            sql = f"select count(*) as ct from rnn_{args.cvi}_{args.target} where origin='{args.origin}'"
             if args.pickup and conn.execute(sql).fetchone().ct >= HYPEROPT_EVALS:
                 print(f'{bcolors.WARNING}skip origin={args.origin}{bcolors.ENDC}')
                 args.origin = origins.pop(0)
@@ -172,7 +173,7 @@ if __name__ == '__main__':
                     'acc_val': acc_val,
                     **res
                 }]).set_index('id')
-                df.to_sql(f'rnn_{args.target}', conn, index_label='id', if_exists='append', dtype=dtype)
+                df.to_sql(f'rnn_{args.cvi}_{args.target}', conn, index_label='id', if_exists='append', dtype=dtype)
 
             return acc_val
 
