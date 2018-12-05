@@ -269,7 +269,7 @@ if __name__ == "__main__":
             while True:
                 cont_loop = False
                 with engine.connect() as conn:
-                    sql = f"select s_dbw, xb from embed_clust where origin='{args.origin}'"
+                    sql = f"select s_dbw from embed_clust where origin='{args.origin}'"
                     temp_CVI = conn.execute(sql).fetchall()
 
                 for sdbw in temp_CVI:
