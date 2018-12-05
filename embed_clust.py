@@ -205,9 +205,7 @@ class EmbedClust(object):
                 stop_reason=self.reason_stop,
 
                 delta_label=delta_label,
-                xb=self.xb().item(),
                 s_dbw=self.s_dbw(),
-                noise_pct=self.noise_pct,
 
                 use=False
             )]).set_index('id')
