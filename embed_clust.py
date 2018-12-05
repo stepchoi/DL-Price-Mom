@@ -71,12 +71,6 @@ class ClusteringLayer(Layer):
         q = K.transpose(K.transpose(q) / K.sum(q, axis=1))
         return q
 
-    def CID(self, x):
-        W = self.clusters  # self.weights[0]
-        a = K.sqrt(K.sum((x[1:] - x[:-1]) ** 2))
-        b = K.sqrt(K.sum((W[1:] - W[:-1]) ** 2))
-        return K.maximum(a, b) / K.minimum(a, b)
-
     def compute_output_shape(self, input_shape):
         assert input_shape and len(input_shape) == 2
         return input_shape[0], self.n_clusters
@@ -224,30 +218,6 @@ class EmbedClust(object):
     # ----- CVI methods --------
     # --------------------------
 
-    def xb(self, xbt=False):
-        """
-        http://folk.ntnu.no/skoge/prost/proceedings/acc05/PDFs/Papers/0203_WeB17_6.pdf (eq 11)
-        {summation (q^2 * d^2) + 1/(nc X nc-1) X summation (euc dist of all combination of cluster centers)}
-          / {min euc dist between all combination of cluster centers +1/nc}
-        """
-        x = self.z  # samples (rows)
-        v = self.cluster_centers
-
-        d2 = cdist(x, v) ** 2
-        v2 = pdist(v) ** 2
-        n = x.shape[0]
-        c = v.shape[0]  # num_clusters
-        # From paper: "the membership matrix U = ... where u(ij) is the membership value of x(j) belonging to v(i)
-        u = self.q  # mu(u) is the element of q (row, column)
-
-        if xbt:
-            top = (d2 * u**2).sum() + 1/(c * (c-1)) * v2.sum()
-            bottom = v2.min() + (1 / c)
-        else:
-            top = (d2 * u ** 2).sum()
-            bottom = v2.min() * n
-        return top / bottom
-
     def s_dbw(self):
         """
         Calculate S_Dbw using iphysresearch/S_Dbw_validity_index (separate file); we need to massage our data
@@ -290,7 +260,7 @@ if __name__ == "__main__":
     origins, n_origins, n_origins_done = generate_origins(args.origin, 3)
     args.origin = origins.pop(0)
 
-    args.nc = args.nc or list(range(3,14))
+    args.nc = args.nc or list(range(6,20))
     nc_range = [int(nc) for nc in args.nc]
     if args.reset:
         with engine.connect() as conn:
@@ -304,8 +274,8 @@ if __name__ == "__main__":
                     sql = f"select s_dbw, xb from embed_clust where origin='{args.origin}'"
                     temp_CVI = conn.execute(sql).fetchall()
 
-                for sdbw, xb in temp_CVI:
-                    if sdbw < 2.5 and xb < 25:
+                for sdbw in temp_CVI:
+                    if sdbw < 0.75:
                         print(f'{bcolors.WARNING}skip origin={args.origin} {bcolors.ENDC}')
                         n_origins_done += 1
                         args.origin = origins.pop(0)
