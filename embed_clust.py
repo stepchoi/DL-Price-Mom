@@ -116,7 +116,7 @@ class EmbedClust(object):
         z_dim, batch_size = self.ae.z_dim, self.ae.batch_size
 
         # max_iter should be a function of num_clust as well as sample size 
-        maxiter = self.n_clusters * 3 * max(1e5, x.shape[0])
+        maxiter = self.n_clusters * 2 * max(1e5, x.shape[0])
         maxiter = int(maxiter)
 
         update_interval = int(x.shape[0] / batch_size) * 2  # 2 epochs
