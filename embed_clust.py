@@ -258,7 +258,7 @@ if __name__ == "__main__":
     origins, n_origins, n_origins_done = generate_origins(args.origin, 3)
     args.origin = origins.pop(0)
 
-    args.nc = args.nc or list(range(6,20))
+    args.nc = args.nc or list(range(8,20))
     nc_range = [int(nc) for nc in args.nc]
     if args.reset:
         with engine.connect() as conn:
