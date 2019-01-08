@@ -23,8 +23,8 @@ from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 
 
 TEST_SIZE = .30
-EARLY_STOPPING = callbacks.EarlyStopping(min_delta=.0001, patience=5)
-REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau(patience=3)
+EARLY_STOPPING = callbacks.EarlyStopping()
+REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau()
 HYPEROPT_EVALS = 50
 
 
@@ -105,7 +105,7 @@ class AE(object):
         X_train, X_test = train_test_split(X, test_size=TEST_SIZE)
         res = self.autoencoder.fit(
             X_train, X_train,
-            epochs=1000,  # doesn't matter how high, the callbacks will stop the model
+            epochs=500,  # the callbacks will stop the model
             batch_size=self.batch_size,
             shuffle=True,
             validation_data=(X_test, X_test),
