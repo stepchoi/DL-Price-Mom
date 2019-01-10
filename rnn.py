@@ -14,8 +14,8 @@ from hyperopt import fmin, tpe, hp, Trials
 from hyperopt.pyll.base import scope
 
 
-EARLY_STOPPING = callbacks.EarlyStopping(min_delta=.0001, patience=5)
-REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau(patience=2)
+EARLY_STOPPING = callbacks.EarlyStopping()
+REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau()
 HYPEROPT_EVALS = 100
 
 
