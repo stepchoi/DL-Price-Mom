@@ -70,7 +70,7 @@ class RNN(object):
         y = pd.get_dummies(d.quant).values
         history = self.model.fit(
             x, y,
-            validation_split=.3,
+            validation_split= 0.2,
             batch_size=batch_size,
             epochs=1000,
             callbacks=[EARLY_STOPPING, REDUCE_LR_PLATEAU]
