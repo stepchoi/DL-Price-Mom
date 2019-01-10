@@ -22,7 +22,7 @@ from sklearn.model_selection import train_test_split
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 
 
-TEST_SIZE = .30
+TEST_SIZE = .20
 EARLY_STOPPING = callbacks.EarlyStopping()
 REDUCE_LR_PLATEAU = callbacks.ReduceLROnPlateau()
 HYPEROPT_EVALS = 50
