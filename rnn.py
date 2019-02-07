@@ -180,9 +180,9 @@ if __name__ == '__main__':
         def unit_space(n):
             obj = {'n': n}
             for i in range(n):
-                obj[f'{n}-{i}'] = scope.int(hp.quniform(f'{n}-{i}', 10, 65, 5))
+                obj[f'{n}-{i}'] = scope.int(hp.quniform(f'{n}-{i}', 11, 66, 11))
             return obj
-        layer_space = hp.choice('layers', [unit_space(i) for i in [2, 3, 4, 5]])
+        layer_space = hp.choice('layers', [unit_space(i) for i in [1, 2, 3]])
         space = {
             'lr': hp.quniform('lr', 1.5, 5, .01),  # => 1e-x
             # 'opt': hp.choice('opt', ['adam', 'rmsprop']),  # winner=adam
